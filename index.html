@@ -3,33 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mở Lì Xì 2026</title>
+<title>Lì Xì 2026 Pro Max</title>
 
 <style>
 body {
     margin: 0;
     font-family: Arial, sans-serif;
     text-align: center;
-    background: linear-gradient(135deg, #b30000, #ffcc00);
+    background: radial-gradient(circle, #ff0000, #8b0000);
     color: white;
+    overflow-x: hidden;
 }
 
 .container {
-    padding-top: 100px;
+    padding-top: 80px;
 }
 
 h1 {
-    font-size: 40px;
-}
-
-.lixi {
-    font-size: 100px;
-    cursor: pointer;
-    transition: transform 0.3s;
-}
-
-.lixi:hover {
-    transform: scale(1.1);
+    font-size: 38px;
 }
 
 button {
@@ -37,14 +28,14 @@ button {
     font-size: 18px;
     border: none;
     border-radius: 30px;
-    background: white;
-    color: #b30000;
+    background: gold;
+    color: #8b0000;
     cursor: pointer;
     font-weight: bold;
 }
 
 button:hover {
-    background: #fff3cd;
+    transform: scale(1.05);
 }
 
 .result {
@@ -53,52 +44,113 @@ button:hover {
     font-weight: bold;
 }
 
-.shake {
-    animation: shake 0.5s;
+#leaderboard {
+    margin-top: 40px;
 }
 
-@keyframes shake {
-    0% { transform: rotate(0deg); }
-    25% { transform: rotate(5deg); }
-    50% { transform: rotate(-5deg); }
-    75% { transform: rotate(5deg); }
-    100% { transform: rotate(0deg); }
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
 }
 </style>
 </head>
-
 <body>
 
+<canvas id="fireworks"></canvas>
+
 <div class="container">
-    <h1>🧧 MỞ LÌ XÌ NĂM MỚI 2026 🧧</h1>
-    <div class="lixi" id="bao">🧧</div>
-    <br><br>
+    <h1>🧧 LÌ XÌ 2026 PRO MAX 🧧</h1>
     <button onclick="openLixi()">Mở Lì Xì</button>
     <div class="result" id="result"></div>
+
+    <div id="leaderboard">
+        <h2>🏆 Top Mở Nhiều Nhất</h2>
+        <ul id="topList"></ul>
+    </div>
 </div>
 
+<audio id="tetSound">
+    <source src="https://www.soundjay.com/human/applause-8.mp3" type="audio/mpeg">
+</audio>
+
 <script>
+const rewards = [
+    {amount: 10000, weight: 30},
+    {amount: 20000, weight: 25},
+    {amount: 50000, weight: 20},
+    {amount: 100000, weight: 15},
+    {amount: 200000, weight: 7},
+    {amount: 500000, weight: 2},
+    {amount: 1000000, weight: 1}
+];
+
+function getWeightedRandom() {
+    const totalWeight = rewards.reduce((sum, r) => sum + r.weight, 0);
+    let random = Math.random() * totalWeight;
+    for (let r of rewards) {
+        if (random < r.weight) return r.amount;
+        random -= r.weight;
+    }
+}
+
 function openLixi() {
-    const amounts = [
-        "10.000đ",
-        "20.000đ",
-        "50.000đ",
-        "100.000đ",
-        "200.000đ",
-        "500.000đ",
-        "1.000.000đ"
-    ];
+    if(localStorage.getItem("opened")) {
+        document.getElementById("result").innerHTML = "❌ Bạn đã mở lì xì rồi!";
+        return;
+    }
 
-    const randomMoney = amounts[Math.floor(Math.random() * amounts.length)];
-    const bao = document.getElementById("bao");
-    const result = document.getElementById("result");
+    let money = getWeightedRandom();
+    localStorage.setItem("opened", "true");
+    localStorage.setItem("money", money);
 
-    bao.classList.add("shake");
+    document.getElementById("result").innerHTML =
+        "🎉 Bạn nhận được " + money.toLocaleString() + "đ 🎉";
 
-    setTimeout(() => {
-        bao.classList.remove("shake");
-        result.innerHTML = "🎉 Chúc mừng! Bạn nhận được " + randomMoney + " 🎉";
-    }, 500);
+    document.getElementById("tetSound").play();
+    launchFireworks();
+    updateLeaderboard(money);
+}
+
+function updateLeaderboard(money) {
+    let list = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+    list.push(money);
+    list.sort((a,b)=>b-a);
+    list = list.slice(0,5);
+    localStorage.setItem("leaderboard", JSON.stringify(list));
+
+    let ul = document.getElementById("topList");
+    ul.innerHTML = "";
+    list.forEach((m,i)=>{
+        ul.innerHTML += "<li>#" + (i+1) + " - " + m.toLocaleString() + "đ</li>";
+    });
+}
+
+window.onload = function() {
+    if(localStorage.getItem("opened")) {
+        document.getElementById("result").innerHTML =
+            "🎉 Bạn đã nhận " + 
+            parseInt(localStorage.getItem("money")).toLocaleString() + "đ";
+    }
+    updateLeaderboard(0);
+}
+
+// Fireworks
+const canvas = document.getElementById("fireworks");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+function launchFireworks() {
+    for(let i=0;i<50;i++){
+        ctx.beginPath();
+        ctx.arc(Math.random()*canvas.width,
+                Math.random()*canvas.height,
+                3,0,Math.PI*2);
+        ctx.fillStyle="yellow";
+        ctx.fill();
+    }
 }
 </script>
 
